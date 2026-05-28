@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в систему</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4 sm:p-6 md:p-8 font-sans">
+    <form id="loginForm" class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200 transition-all">
+        <h2 class="text-2xl font-bold mb-6 text-center text-slate-800">Авторизатсия</h2>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Рақами телефон:</label>
+                <input type="text" id="phonenumber" placeholder="790123456" required 
+                       class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white outline-none transition-all text-base">
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Рамз:</label>
+                <input type="password" id="password" placeholder="••••••" required 
+                       class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white outline-none transition-all text-base">
+            </div>
+        </div>
+
+        <button type="button" id="loginBtn" onclick="performLogin()" 
+                class="w-full bg-indigo-600 text-white py-3.5 rounded-xl mt-8 font-semibold hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-lg shadow-indigo-100 text-base">
+            Даромадан
+        </button>
+        
+        <p class="text-center text-sm text-slate-500 mt-6">
+            Аккаунт вуҷуд надорад? <a href="/chats/v1/sign-up" class="text-indigo-600 font-medium hover:underline ml-1">Худро қайд кардан</a>
+        </p>
+    </form>
+
+    <script>
+        async function performLogin() {
+            const phone = document.getElementById('phonenumber').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            const btn = document.getElementById('loginBtn');
+            
+            if(!phone || !pass) return alert("Заполните все поля");
+
+            btn.disabled = true;
+            btn.innerText = "Вход...";
+            btn.classList.add('opacity-70', 'cursor-not-allowed');
+
+            try {
+                const response = await fetch('/chats/v1/login', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phone_number: phone,
+                        password: pass
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.access_token) {
+                    localStorage.removeItem('chat_room_id');
+                    localStorage.removeItem('chat_room_name');
+                    localStorage.setItem('chat_token', result.access_token);
+                    window.location.href = "/chats/v1/chat-interface"; 
+                } else {
+                    alert("Ошибка: " + (result.detail || "Неверный логин или пароль"));
+                    resetButton(btn);
+                }
+            } catch (error) {
+                console.error("Ошибка запроса:", error);
+                alert("Не удалось связаться с сервером. Проверьте подключение.");
+                resetButton(btn);
+            }
+        }
+
+        function resetButton(btn) {
+            btn.disabled = false;
+            btn.innerText = "Даромадан";
+            btn.classList.remove('opacity-70', 'cursor-not-allowed');
+        }
+
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performLogin();
+        });
+    </script>
+</body>
+</html>
