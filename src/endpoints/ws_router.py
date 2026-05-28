@@ -16,10 +16,6 @@ templates = Jinja2Templates(directory="templates")
 async def get_login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
-@router.get("/sign-up", response_class=HTMLResponse)
-async def get_login_page(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
-
 @router.get("/chat-interface", response_class=HTMLResponse)
 async def get_chat_interface(request: Request):
     return templates.TemplateResponse("chat.html", {"request": request})
